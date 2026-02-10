@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inclusion: The Unfair Game</title>
+    <link href="https://fonts.googleapis.com/css2?family=Black+Ops+One&family=Montserrat:wght@400;700;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --neon-blue: #00f3ff;
+            --neon-pink: #ff00ff;
+            --dark-bg: #0b0c15;
+            --card-bg: #1f2235;
+            --text-main: #ffffff;
+        }
+
+        body {
+            background-color: var(--dark-bg);
+            color: var(--text-main);
+            font-family: 'Montserrat', sans-serif;
+            margin: 0;
+            overflow-x: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        /* INTRO ANIMATION */
+        #intro-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background-color: black;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .intro-text-1 {
+            font-family: 'Black Ops One', cursive;
+            font-size: 6rem;
+            color: var(--neon-blue);
+            text-transform: uppercase;
+            transform: translateX(100vw);
+            opacity: 0;
+        }
+
+        .intro-text-2 {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 3rem;
+            color: white;
+            font-weight: 900;
+            margin-top: 20px;
+            opacity: 0;
+            transform: scale(0.5);
+        }
+
+        .slide-in { animation: slideInRight 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
+        .pop-in { animation: popIn 0.5s ease forwards; }
+        .fade-out { animation: fadeOut 0.8s ease forwards; }
+
+        @keyframes slideInRight {
+            0% { transform: translateX(100vw); opacity: 0; }
+            100% { transform: translateX(0); opacity: 1; }
+        }
+        @keyframes popIn {
+            0% { transform: scale(0.5); opacity: 0; }
+            80% { transform: scale(1.1); opacity: 1; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        @keyframes fadeOut {
+            to { opacity: 0; pointer-events: none; }
+        }
+
+        /* HEADER */
+        header {
+            margin-top: 30px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .graphic-title {
+            font-family: 'Black Ops One', cursive;
+            font-size: 4rem;
+            text-transform: uppercase;
+            color: transparent;
+            -webkit-text-stroke: 2px var(--neon-blue);
+            text-shadow: 0 0 20px rgba(0, 243, 255, 0.5);
+            letter-spacing: 5px;
+            padding: 10px 40px;
+            border: 4px solid var(--neon-blue);
+            border-radius: 10px;
+            background: linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0, 243, 255, 0.1) 100%);
+        }
+        
+        .sub-title {
+            font-size: 1.2rem;
+            letter-spacing: 3px;
+            color: var(--neon-pink);
+            font-weight: bold;
+            margin-top: 10px;
+            text-transform: uppercase;
+        }
+
+        /* GAME BOARD */
+        .game-layout {
+            display: flex;
+            gap: 50px;
+            width: 90%;
+            max-width: 1200px;
+            margin-top: 20px;
+        }
+
+        .board-grid {
+            flex: 2;
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+        }
+
+        .card {
+            background-color: var(--card-bg);
+            aspect-ratio: 1;
+            border-radius: 15px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 2.5rem;
+            font-family: 'Black Ops One', cursive;
+            color: rgba(255,255,255,0.2);
+            border: 2px solid rgba(255,255,255,0.1);
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .card:hover {
+            border-color: var(--neon-blue);
+            color: white;
+            box-shadow: 0 0 25px rgba(0, 243, 255, 0.4);
+            transform: translateY(-5px);
+        }
+
+        .card.disabled {
+            background-color: #111;
+            border-color: #333;
+            color: #333;
+            pointer-events: none;
+            box-shadow: none;
+        }
+
+        /* SCOREBOARD */
+        .scoreboard {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .team-box {
+            background: var(--card-bg);
+            padding: 25px;
+            border-radius: 15px;
+            text-align: center;
+            border: 2px solid transparent;
+        }
+        
+        .team-box.active-turn {
+            border-color: var(--neon-pink);
+            box-shadow: 0 0 20px rgba(255, 0, 255, 0.3);
+        }
+
+        .team-name { font-size: 1.5rem; font-weight: 900; margin-bottom: 10px; }
+        .team-score { font-size: 3.5rem; font-family: 'Black Ops One', cursive; color: white; }
+
+        /* MODAL */
+        .modal-bg {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.9);
+            display: none;
+            justify-content: center; align-items: center;
+            z-index: 100;
+            backdrop-filter: blur(5px);
+        }
+
+        .modal-box {
+            background: #1a1d2e;
+            width: 80%; max-width: 800px;
+            padding: 40px;
+            border-radius: 20px;
+            border: 2px solid var(--neon-blue);
+            text-align: center;
+            box-shadow: 0 0 50px rgba(0, 243, 255, 0.2);
+        }
+
+        .q-text { font-size: 1.8rem; margin-bottom: 30px; line-height: 1.4; }
+        .a-text { 
+            font-size: 1.4rem; color: var(--neon-blue); 
+            margin-bottom: 30px; display: none; 
+            border: 1px dashed var(--neon-blue);
+            padding: 20px; border-radius: 10px;
+        }
+
+        .btn {
+            background: transparent;
+            border: 2px solid white;
+            color: white;
+            padding: 15px 30px;
+            font-size: 1.2rem;
+            cursor: pointer;
+            margin: 10px;
+            font-weight: bold;
+            text-transform: uppercase;
+            transition: 0.2s;
+        }
+
+        .btn:hover { background: white; color: black; transform: scale(1.05); }
+        .btn-green { border-color: #00ff66; color: #00ff66; }
+        .btn-green:hover { background: #00ff66; color: black; }
+        .btn-red { border-color: #ff0055; color: #ff0055; }
+        .btn-red:hover { background: #ff0055; color: white; }
+
+        .points-reveal {
+            font-size: 4rem;
+            font-family: 'Black Ops One';
+            margin: 20px 0;
+            display: none;
+        }
+        .pos { color: #00ff66; text-shadow: 0 0 20px rgba(0,255,102,0.5); }
+        .neg { color: #ff0055; text-shadow: 0 0 20px rgba(255,0,85,0.5); }
+
+        .hidden { display: none !important; }
+
+    </style>
+</head>
+<body>
+
+    <div id="intro-overlay">
+        <div class="intro-text-1" id="anim-text-1">GAME TIME</div>
+        <div class="intro-text-2" id="anim-text-2">ARE YOU READY?</div>
+    </div>
+
+    <header>
+        <div class="graphic-title">TIMBERWOLVES CURLING</div>
+        <div class="sub-title">The Unfair Inclusion Game</div>
+    </header>
+
+    <div class="game-layout">
+        <div class="board-grid" id="board"></div>
+
+        <aside class="scoreboard">
+            <div class="team-box active-turn" id="box-a">
+                <div class="team-name">TEAM A</div>
+                <div class="team-score" id="score-a">0</div>
+            </div>
+            <div class="team-box" id="box-b">
+                <div class="team-name">TEAM B</div>
+                <div class="team-score" id="score-b">0</div>
+            </div>
+        </aside>
+    </div>
+
+    <div class="modal-bg" id="modal">
+        <div class="modal-box">
+            <div class="q-text" id="modal-q"></div>
+            <div class="a-text" id="modal-a"></div>
+            <div class="points-reveal" id="modal-pts"></div>
+
+            <div id="controls-1">
+                <button class="btn" onclick="showAnswer()">Reveal Answer</button>
+            </div>
+
+            <div id="controls-2" class="hidden">
+                <button class="btn btn-red" onclick="handleWrong()">Incorrect</button>
+                <button class="btn btn-green" onclick="handleRight()">Correct</button>
+            </div>
+
+            <div id="controls-3" class="hidden">
+                <h3>THE UNFAIR CHOICE:</h3>
+                <p>Do you want to keep the hidden points or give them to the other team?</p>
+                <button class="btn" onclick="finalizePoints('keep')">KEEP</button>
